@@ -1,0 +1,30 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Services
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Templates
+@using Microsoft.AspNetCore.Components.Web
+
+@inject Cart cart
+@inject DbContextManager<IAccountContext> AccountContextFactory
+@inject DbContextManager<IProductContext> ProductContextFactory
+
+@attribute [Route(Paths.Backlash + Paths.Home)]
+
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<a>Login</a>
+<a>Sign Up</a>
+<a>Show Cart</a>
+<input type="text" name="searchBar"/>
+
+<ProductList Products="ProductContextFactory.Select(db => db.Products).Where(p => !p.IsDiscontinued).ToList()" />
+
+@code {
+
+}

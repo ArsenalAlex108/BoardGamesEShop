@@ -1,0 +1,60 @@
+﻿@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@using BoardGamesEShop.Client.Services
+@using BoardGamesEShop.Client.Templates
+@using BoardGamesEShop.Client.Dtos
+@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+
+@inject DbContextManager<IAccountContext> AccountContextManager
+@inject NavigationManager NavManager
+@inject Singleton<Account> Account
+
+@rendermode InteractiveServer
+
+@attribute [Route(Paths.Backlash + Paths.Login)]
+
+<h3>Login</h3>
+<LoginInfo OnSubmitCallback="@OnSubmit" ValidationErrors="@validationErrors"/>
+
+@code {
+
+    private string validationErrors = "";
+
+    [CascadingParameter]
+    public required PublicLayout Layout { get; set; }
+
+    private void OnSubmit(AccountLogin login)
+    {
+        var account = AccountContextManager.Select(db => db.Accounts)
+                                           .Find(acc => acc.Name == login.Name);
+
+        if (account is null)
+        {
+            validationErrors = $"User \"{login.Name}\" cannot be found.";
+            return;
+        }
+
+        if (!account.CheckPassword(login.Password))
+        {
+            validationErrors = "Incorrect password. Please try again.";
+            return;
+        }
+
+        Account.Value = account;
+
+        if (account is User)
+        {
+            NavManager.NavigateTo(Paths.MyAccount);
+        }
+        else
+        if (account is Admin)
+        {
+            NavManager.NavigateTo(Paths.Admin);
+        }
+
+        Layout.StateHasChanged();
+    }
+
+}

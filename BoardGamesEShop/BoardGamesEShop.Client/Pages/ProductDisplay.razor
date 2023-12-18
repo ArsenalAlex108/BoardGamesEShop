@@ -1,0 +1,73 @@
+﻿@page "/product"
+
+@using BoardGamesEShop.Client.DbContexts;
+@using BoardGamesEShop.Client.Models.Products;
+@using BoardGamesEShop.Client.DbContexts.Abstractions;
+@using BoardGamesEShop.Client.Navigations
+@using Microsoft.AspNetCore.WebUtilities
+@inject DbContextManager<IProductContext> ProductContextFactory
+@inject NavigationManager NavManager
+
+@if (Product is null)
+{
+    <p>Product cannot be found.</p>
+}
+else
+if (Product.IsDiscontinued)
+{
+    <p>This product has been discontinued.</p>
+}
+else
+{
+    <label>@Product.Name</label>
+    <br />
+    <label>@Product.Price</label>
+    <br />
+    <label>@Product.Description</label>
+    <br />
+    <a>Purchase</a>
+    <label>Reviews</label>
+    <br />
+    
+    using var productContext = ProductContextFactory.CreateContext();
+    
+    foreach (var review in productContext.Reviews.Where(r => r.Product == Product))
+    {
+        <label>@review.Reviewer.Name
+        </label><br/>
+        <label>Stars: @review.Stars</label>
+        @if (!String.IsNullOrWhiteSpace(review.Comment))
+        {
+            <p>review.Comment</p>
+        }
+    }
+
+    <label>Review</label>
+}
+
+@code {
+    [Parameter]
+    public required Product? Product { get; set; }
+
+    protected override void OnInitialized()
+    {
+        bool queryResult = NavManager.TryGetValue("productId", out var idString);
+
+        if (!queryResult)
+        {
+            NavManager.NavigateTo("");
+            return;
+        }
+
+        bool idResult = Guid.TryParse(idString, out Guid id);
+
+        if (!idResult)
+        {
+            NavManager.NavigateTo("");
+            return;
+        }
+
+        Product = ProductContextFactory.Select(db => db.Products)
+                                       .Find(p => p.Id == id);
+    }
+}

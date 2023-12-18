@@ -1,0 +1,34 @@
+﻿@using BoardGamesEShop.Client.Dtos
+
+@if (!String.IsNullOrWhiteSpace(ValidationErrors))
+{
+    <div class="alert alert-danger">@ValidationErrors</div>
+}
+<EditForm Model="loginInfo" OnSubmit="Validate" FormName="LoginTemplateForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id="userName" @bind-Value="loginInfo.Name"></InputText>
+    <InputText id="password" @bind-Value="loginInfo.Password" type="password"></InputText>
+    <button type="submit">@ButtonText</button>
+</EditForm>
+
+
+@code {
+
+    private AccountLogin loginInfo = new();
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Log In";
+
+    [Parameter]
+    public string ValidationErrors { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<AccountLogin> OnSubmitCallback { get; set; }
+
+    private async Task Validate(EditContext editContext)
+    {
+        await OnSubmitCallback.InvokeAsync(loginInfo);
+    }
+}

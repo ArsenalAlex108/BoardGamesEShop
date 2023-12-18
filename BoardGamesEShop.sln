@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardGamesEShop", "BoardGamesEShop\BoardGamesEShop\BoardGamesEShop.csproj", "{EFCDCDE3-790E-47BE-8D07-4E53BDA02790}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardGamesEShop.Client", "BoardGamesEShop\BoardGamesEShop.Client\BoardGamesEShop.Client.csproj", "{9149B23D-6B36-494D-B66D-D0DEFE95CDE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EFCDCDE3-790E-47BE-8D07-4E53BDA02790}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFCDCDE3-790E-47BE-8D07-4E53BDA02790}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFCDCDE3-790E-47BE-8D07-4E53BDA02790}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFCDCDE3-790E-47BE-8D07-4E53BDA02790}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9149B23D-6B36-494D-B66D-D0DEFE95CDE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9149B23D-6B36-494D-B66D-D0DEFE95CDE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9149B23D-6B36-494D-B66D-D0DEFE95CDE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9149B23D-6B36-494D-B66D-D0DEFE95CDE2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2DB5BACE-9050-4696-8D07-974DB7BD8BD6}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,42 @@
+﻿@attribute [Route(Paths.Backlash + Paths.MyAccount)]
+
+@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Services
+
+@inject Singleton<Account> Account
+@inject NavigationManager NavManager
+
+
+@if (UserAccount is not null)
+{
+    <h3>Account</h3>
+    <p>@UserAccount.Name</p>
+    <p>@UserAccount.PhoneNumber</p>
+
+    @foreach (var address in UserAccount.Addresses)
+    {
+        <p>@address
+        </p>
+    }
+
+    <p>Purchase History</p>
+    <p>Review History</p>
+}
+@code {
+
+    [Parameter]
+    public required User UserAccount { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Account.Value is not User user)
+        {
+            NavManager.NavigateTo(Paths.Login);
+            return;
+        }
+
+        UserAccount = user;
+    }
+
+}

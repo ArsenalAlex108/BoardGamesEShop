@@ -1,0 +1,40 @@
+﻿@using BoardGamesEShop.Client.Templates
+@using BoardGamesEShop.Client.Dtos
+@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+
+@inject DbContextManager<IAccountContext> AccountContextManager
+@inject NavigationManager NavManager
+
+@rendermode InteractiveServer
+
+@page "/signup"
+
+<h3>Sign Up</h3>
+<LoginInfo OnSubmitCallback="@OnSubmit" ValidationErrors="@validationErrors" ButtonText="Sign Up"/>
+
+@code {
+    private string validationErrors = "";
+
+    private async Task OnSubmit(AccountLogin signup)
+    {
+        if (AccountContextManager.Select(db => db.Accounts)
+                                 .Any(acc => acc.Name == signup.Name))
+        {
+            validationErrors = $"User \"{signup.Name}\" already exists.";
+            return;
+        }
+
+        await AccountContextManager.Transaction(async db =>
+        {
+            await db.Users.AddAsync(signup.ToAccount());
+        });
+
+        NavManager.NavigateTo("");
+    }
+
+}
+
+@code {
+
+}

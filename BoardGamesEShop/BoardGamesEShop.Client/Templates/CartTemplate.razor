@@ -1,0 +1,19 @@
+﻿@using BoardGamesEShop.Client.Services;
+@inject Cart Cart
+
+<h3>Cart</h3>
+
+@foreach (var (product, count) in Cart.Products)
+{
+    <label>@product.Name</label>
+    <label>@count</label>
+    <label>@product.Price * count</label>
+    <br/>
+    <label>Total: @(Cart.TotalPrice)</label><br/>
+    <a>Checkout</a>
+
+}
+
+@code {
+
+}
