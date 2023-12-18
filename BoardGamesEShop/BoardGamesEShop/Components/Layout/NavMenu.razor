@@ -2,8 +2,6 @@
 @using BoardGamesEShop.Client.Navigations
 @using BoardGamesEShop.Client.Services
 
-@inject Singleton<Account> Account
-
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BoardGamesEShop</a>
@@ -32,7 +30,7 @@
             </NavLink>
         </div>
 
-        @if (Account.Value is null)
+        @if (AccountStore.Value is null)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href=@Paths.Login >
@@ -49,8 +47,8 @@
         else
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@((Account.Value is User)? Paths.MyAccount : Paths.Admin)">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> @Account.Value.Name
+                <NavLink class="nav-link" href="@((AccountStore.Value is User)? Paths.MyAccount : Paths.Admin)">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> @AccountStore.Value.Name
                 </NavLink>
             </div>
         }
@@ -58,19 +56,8 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-    }
+    [Parameter]
+    public Singleton<Account?> AccountStore { get; set; } = new(null);
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-    }
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-    }
 }
 

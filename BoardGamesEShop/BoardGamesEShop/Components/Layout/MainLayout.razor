@@ -1,11 +1,13 @@
-﻿@using BoardGamesEShop.Client.Pages.Layout
+﻿@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Pages.Layout
+@using BoardGamesEShop.Client.Services
 @inherits PublicLayout
 
 
 <CascadingValue Value="this">
     <div class="page">
         <div class="sidebar">
-            <NavMenu />
+            <NavMenu AccountStore="accountStore" />
         </div>
 
         <main>
@@ -26,5 +28,12 @@
     <a class="dismiss">🗙</a>
 </div>
 
+@code {
+    private Singleton<Account?> accountStore = new(null);
 
+    public override void LoadAccount(Account? account)
+    {
+        accountStore.Value = account;
+    }
+} 
 

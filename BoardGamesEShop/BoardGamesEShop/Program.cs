@@ -20,7 +20,7 @@ builder.Services.AddManagedDbContext<IAccountContext>(factory);
 builder.Services.AddManagedDbContext<IProductContext>(factory);
 builder.Services.AddManagedDbContext<IMiscellaneousContext>(factory);
 
-builder.Services.AddScoped<Singleton<Account>>(_ => new(null));
+builder.Services.AddScoped<Singleton<Account?>>(_ => new(null));
 
 var app = builder.Build();
 

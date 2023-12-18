@@ -44,17 +44,9 @@
 
         Account.Value = account;
 
-        if (account is User)
-        {
-            NavManager.NavigateTo(Paths.MyAccount);
-        }
-        else
-        if (account is Admin)
-        {
-            NavManager.NavigateTo(Paths.Admin);
-        }
+        NavManager.NavigateLogin(account);
 
-        Layout.StateHasChanged();
+        Layout.LoadAccount(account);
     }
 
 }

@@ -1,4 +1,6 @@
-﻿namespace BoardGamesEShop.Client.DbContexts.Abstractions;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+namespace BoardGamesEShop.Client.DbContexts.Abstractions;
 
 /// <summary>
 /// Provides an interface for saving changes in a DbContext.
@@ -83,4 +85,10 @@ public interface IDbContextSaver : IDisposable
     Task<int> SaveChangesAsync(
         bool acceptAllChangesOnSuccess = true,
         CancellationToken cancellationToken = default);
+
+    EntityEntry<TEntity> Update<TEntity>(TEntity entity) where TEntity : class;
+
+    void UpdateRange(params object[] entities) => UpdateRange(entities as IEnumerable<object>);
+
+    void UpdateRange(IEnumerable<object> entities);
 }

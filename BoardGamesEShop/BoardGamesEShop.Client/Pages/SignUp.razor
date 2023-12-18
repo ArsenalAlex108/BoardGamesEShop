@@ -1,10 +1,15 @@
-﻿@using BoardGamesEShop.Client.Templates
+﻿@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@using BoardGamesEShop.Client.Services
+@using BoardGamesEShop.Client.Templates
 @using BoardGamesEShop.Client.Dtos
 @using BoardGamesEShop.Client.DbContexts
 @using BoardGamesEShop.Client.DbContexts.Abstractions
 
 @inject DbContextManager<IAccountContext> AccountContextManager
 @inject NavigationManager NavManager
+@inject Singleton<Account> Account
 
 @rendermode InteractiveServer
 
@@ -16,6 +21,9 @@
 @code {
     private string validationErrors = "";
 
+    [CascadingParameter]
+    public required PublicLayout Layout { get; set; }
+
     private async Task OnSubmit(AccountLogin signup)
     {
         if (AccountContextManager.Select(db => db.Accounts)
@@ -25,12 +33,18 @@
             return;
         }
 
+        var account = signup.ToAccount();
+
         await AccountContextManager.Transaction(async db =>
         {
-            await db.Users.AddAsync(signup.ToAccount());
+            await db.Users.AddAsync(account);
         });
 
-        NavManager.NavigateTo("");
+        Account.Value = account;
+
+        NavManager.NavigateLogin(account);
+
+        Layout.LoadAccount(account);
     }
 
 }

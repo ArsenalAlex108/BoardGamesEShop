@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
+using BoardGamesEShop.Client.Models.Accounts;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
@@ -21,5 +23,18 @@ public static class NavigationExtensions
 
         var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
         return QueryHelpers.ParseQuery(uri.Query).TryGetValue(key, out value);
+    }
+
+    public static void NavigateLogin(this NavigationManager navigationManager, Account account)
+    {
+        if (account is User)
+        {
+            navigationManager.NavigateTo(Paths.MyAccount);
+        }
+        else
+        if (account is Admin)
+        {
+            navigationManager.NavigateTo(Paths.Admin);
+        }
     }
 }

@@ -2,18 +2,29 @@
 
 @using BoardGamesEShop.Client.Models.Accounts
 @using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
 @using BoardGamesEShop.Client.Services
 
 @inject Singleton<Account> Account
 @inject NavigationManager NavManager
 
 
-@if (UserAccount is not null)
+@if (UserAccount is null)
+{
+    
+}
+else
+if (UserAccount.IsClosed)
+{
+    <p>This account has been closed.</p>
+}
+else
 {
     <h3>Account</h3>
     <p>@UserAccount.Name</p>
     <p>@UserAccount.PhoneNumber</p>
 
+    <p>Addresses</p>
     @foreach (var address in UserAccount.Addresses)
     {
         <p>@address
@@ -22,11 +33,22 @@
 
     <p>Purchase History</p>
     <p>Review History</p>
+    <button @onclick=LogOut>Log Out</button>
 }
 @code {
 
     [Parameter]
     public required User UserAccount { get; set; }
+
+    [CascadingParameter]
+    public required PublicLayout Layout { get; set; }
+
+    private void LogOut(MouseEventArgs e)
+    {
+        Layout.LoadAccount(null);
+
+        NavManager.NavigateTo(Paths.Home);
+    }
 
     protected override void OnInitialized()
     {

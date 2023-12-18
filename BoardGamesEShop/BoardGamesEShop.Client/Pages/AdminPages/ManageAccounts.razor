@@ -1,7 +1,57 @@
-﻿@page "/admin/accounts"
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
+@attribute [Route(Paths.ManageAccounts), Route(Paths.Admin)]
+
+@inject DbContextManager<IAccountContext> AccountContextManager
 
 <h3>ManageAccounts</h3>
 
-@code {
+<table>
+    @foreach (var account in AccountContextManager.Select(db => db.Accounts))
+    {
+        <tr>
+            <td>@if (account.IsClosed)
+                {
+                    <s>@account.Name</s>
+                }
+                else
+                    @account.Name
+                </td>
+            <td>@account.GetType().Name</td>
+            <td>@if (account.GetType() == typeof(Admin))
+                {
+                }
+                else if (account.IsClosed)
+                {
+                    <button onclick="@(async () => await ReopenAccount(account))">Reopen</button>
+                }
+                else
+                {
+                    <button onclick="@(async () => await CloseAccount(account))">Close</button>
+                }
+            </td>
+        </tr>
+    }
+</table>
 
+@code {
+    private async Task CloseAccount(Account account)
+    {
+        account.IsClosed = true;
+
+        await AccountContextManager.UpdateAsync(account);
+
+        StateHasChanged();
+    }
+
+    private async Task ReopenAccount(Account account)
+    {
+        account.IsClosed = false;
+
+        await AccountContextManager.UpdateAsync(account);
+
+        StateHasChanged();
+    }
 }
