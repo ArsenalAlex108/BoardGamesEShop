@@ -42,7 +42,7 @@ public sealed partial class MainDbContext
             // secure - consider a more secure solution such as
             // Cloud Secret Manager (https://cloud.google.com/secret-manager) to help
             // keep secrets safe.
-            Host = "cloudsql/boardgameeshop:asia-east1:board-games-e-shop",
+            Host = "/cloudsql/boardgameeshop:asia-east1:board-games-e-shop/.s.PGSQL.5432",
             Username = "postgres",
             Password = "N_rrPR9y~cdiAR"
         };
