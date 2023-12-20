@@ -7,19 +7,30 @@ namespace BoardGamesEShop.Client.Models.Products;
 [PrimaryKey(nameof(WarehouseId), nameof(ProductId))]
 public class Stock
 {
+    private Warehouse _warehouse;
+    private Product _product;
+
     internal Stock() { }
 
-    public Guid WarehouseId
+    private Guid WarehouseId { get; set; }
+    public virtual required Warehouse Warehouse
     {
-        get => Warehouse.Id; set => Warehouse.Id = value;
+        get => _warehouse; set
+        {
+            WarehouseId = value.Id;
+            _warehouse = value;
+        }
     }
-    public virtual required Warehouse Warehouse { get; set; }
 
-    public Guid ProductId
+    private Guid ProductId { get; set; }
+    public virtual required Product Product
     {
-        get => Product.Id; set => Product.Id = value;
+        get => _product; set
+        {
+            ProductId = value.Id;
+            _product = value;
+        }
     }
-    public virtual required Product Product { get; set; }
 
     [Range(0, int.MaxValue)]
     public required int Count { get; set; }

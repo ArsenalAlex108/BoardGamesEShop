@@ -8,15 +8,17 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <InputText id="userName" @bind-Value="loginInfo.Name"></InputText>
-    <InputText id="password" @bind-Value="loginInfo.Password" type="password"></InputText>
+    <h5>User Name: </h5>
+    <InputText id="userName" @bind-Value="loginInfo.Name"></InputText><br/>
+    <h5>Password: </h5>
+    <InputText id="password" @bind-Value="loginInfo.Password" type="password"></InputText><br/><br/>
     <button type="submit">@ButtonText</button>
 </EditForm>
 
 
 @code {
 
-    private AccountLogin loginInfo = new();
+    private AccountDto loginInfo = new();
 
     [Parameter]
     public string ButtonText { get; set; } = "Log In";
@@ -25,7 +27,7 @@
     public string ValidationErrors { get; set; } = "";
 
     [Parameter]
-    public EventCallback<AccountLogin> OnSubmitCallback { get; set; }
+    public EventCallback<AccountDto> OnSubmitCallback { get; set; }
 
     private async Task Validate(EditContext editContext)
     {

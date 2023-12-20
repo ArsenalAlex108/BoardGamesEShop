@@ -5,7 +5,7 @@ using BoardGamesEShop.Client.Models.Miscellaneous;
 
 namespace BoardGamesEShop.Client.Models.Products;
 
-public class Product
+public class Product : IEquatable<Product>
 {
     internal Product() { }
 
@@ -17,6 +17,29 @@ public class Product
     public string Description { get; set; } = "";
     public required Money Price { get; set; }
     public virtual IList<ImagePath> ImagePaths { get; set; } = [];
+    [MinLength(1)]
     public virtual IList<Game> Games { get; set; } = [];
     public bool IsDiscontinued { get; set; }
+
+    public virtual bool Equals(Product? other) => ReferenceEquals(this, other) || Id == other?.Id;
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as Product);
+    }
+
+    public static bool operator ==(Product a, Product b)
+    {
+        return a.Equals(b);
+    }
+
+    public static bool operator !=(Product a, Product b)
+    {
+        return !a.Equals(b);
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }

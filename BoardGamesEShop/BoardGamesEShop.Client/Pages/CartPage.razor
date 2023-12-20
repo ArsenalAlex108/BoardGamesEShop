@@ -1,0 +1,239 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Models.Miscellaneous
+@using BoardGamesEShop.Client.Models.Products
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@using BoardGamesEShop.Client.Services
+@using BoardGamesEShop.Client.Templates
+@using Microsoft.EntityFrameworkCore
+@using Syncfusion.Blazor.DropDowns
+
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@inject Cart Cart
+@inject Singleton<Account> Account
+@attribute [Route(Paths.Cart)]
+
+<h3>Cart</h3>
+<EditForm Model="SelectedAddress" FormName="AddressMultichoiceForm" OnValidSubmit="SubmitBill">
+
+@if (!String.IsNullOrWhiteSpace(ValidationErrors))
+{
+    <div class="alert alert-danger">@ValidationErrors</div>
+}
+<div style="th, td { padding: 15px }">
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>Count</th>
+            <th>Price</th>
+        </tr>
+        @foreach (var item in Cart.Products)
+        {
+            <tr>
+                <td>@item.Key.Name</td>
+                <td align="right"><InputNumber @bind-Value=item.Value.Value @bind-Value:after="OnProductCountChange"></InputNumber></td>
+                <td>@(item.Key.Price * (int)item.Value.Value)</td>
+            </tr>
+        }
+        <tr>
+           <th colspan="2">Total</th>
+           <td>@Cart.TotalPrice</td>
+        </tr>
+    </table>
+</div>
+
+
+    <DataAnnotationsValidator />
+    <p>Deliver to: </p>
+    <li>
+        <p>One of your addresses:</p>
+        <SfDropDownList TValue="string" TItem=Address Placeholder=@("Select an address") DataSource="@Addresses" AllowFiltering=true>
+            <DropDownListFieldSettings Value=@nameof(SelectedAddress.String) 
+            Text=@nameof(SelectedAddress.String)></DropDownListFieldSettings>
+            <DropDownListEvents TValue="string" 
+                TItem="Address" 
+                ValueChange="OnValueChange">
+            </DropDownListEvents>
+        </SfDropDownList>
+    </li>
+    <p>Or</p>
+    <li>
+        To this address:
+        <ValidationSummary />
+        <AddressInput Address="SelectedAddress" />
+    </li>
+    @if (Cart.TotalPrice.Amount > 0)
+    {
+        <button type="submit">Complete Order</button>
+    }
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    public required ILayoutHandle Layout { get; set; }
+
+    private Address SelectedAddress { get; set; } = new Address();
+
+    private IList<Address> Addresses { get; set; } = [];
+
+    private string ValidationErrors { get; set; } = "";
+
+    private static decimal ShipCoef = 0.1m;
+
+    protected override void OnInitialized()
+    {
+        Layout.IsUser = true;
+
+        Addresses = ProductContextManager.Select(db => db.Set<User>())
+                                         .Find(u => u == (User)Account.Value)
+                                         ?.Addresses ?? [];
+
+        ValidationErrors = Cart.Validate(ProductContextManager);
+    }
+
+    private async Task SubmitBill(EditContext editContext)
+    {
+        ValidationErrors = Cart.Validate(ProductContextManager);
+
+        if (!String.IsNullOrWhiteSpace(ValidationErrors)) return;
+
+        var bill = new Bill()
+        {
+            Time = DateTimeOffset.UtcNow,
+            Buyer = (User)Account.Value,
+            Destination = SelectedAddress,
+            TotalProductsPrice = Cart.TotalPrice
+        };
+
+        using (var db = ProductContextManager.CreateContext())
+        {
+            db.Update(bill);
+
+            await db.Bills.AddAsync(bill).ConfigureAwait(false);
+
+            await db.SaveChangesAsync().ConfigureAwait(false);
+
+            db.Update(bill);
+        }
+
+        decimal shipCost = 0;
+
+        var nearbyWarehouses = ProductContextManager.Select(db => db.Warehouses).Where(w => w.Address.City == SelectedAddress.City);
+
+        var farWarehouses = ProductContextManager.Select(db => db.Warehouses).Where(w => w.Address.City != SelectedAddress.City);
+
+        foreach (var (product, count) in Cart.Products)
+        {
+
+            int remaining = count.Value;
+
+            bool far = false;
+            foreach (var warehouseSet in new[] { nearbyWarehouses, farWarehouses })
+            {
+                foreach (var warehouse in warehouseSet)
+                {
+                    if (remaining == 0) break;
+
+                    var stock = ProductContextManager.Select(db => db.Stocks.Include(s => s.Product)
+                                              .Include(s => s.Warehouse))
+                                              .Where(s => s.Warehouse.Equals(warehouse)
+                                              && s.Product == product)
+                                              .FirstOrDefault();
+
+                    if (remaining < stock?.Count)
+                    {
+                        if (far) shipCost += remaining * ShipCoef;
+
+                        stock!.Count -= remaining;
+
+                        await ProductContextManager.UpdateAsync(stock);
+
+                        await ProductContextManager.Transaction(async db =>
+                        {
+                            var billProducts = new BillProducts()
+                            {
+                                Bill = bill,
+                                Warehouse = warehouse,
+                                Product = product,
+                                Count = remaining
+                            };
+
+                            billProducts.Expunge();
+
+                            db.Update(billProducts);
+
+                            await db.BillProducts.AddAsync(billProducts).ConfigureAwait(false);
+                        }).ConfigureAwait(false);
+
+
+                        remaining = 0;
+                        break;
+                    }
+                    else
+                    {
+                        var amount = (stock?.Count).GetValueOrDefault();
+
+                        if (amount <= 0) continue;
+
+                        if (stock is not null)
+                        {
+                            stock.Count = 0;
+                        }
+
+                        await ProductContextManager.UpdateAsync(stock!);
+
+                        await ProductContextManager.Transaction(async db =>
+                        {
+                            var billProduct = new BillProducts()
+                            {
+                                Bill = bill,
+                                Warehouse = warehouse,
+                                Product = product,
+                                Count = amount
+                            };
+
+                            db.Update(billProduct);
+
+                            await db.BillProducts.AddAsync(billProduct).ConfigureAwait(false);
+                        }).ConfigureAwait(false);
+
+                        remaining -= amount;
+
+                        if (far) shipCost += amount * ShipCoef;
+                    }
+                }
+
+                far = true;
+            }
+
+            if (remaining > 0)
+            {
+                StateHasChanged();
+                return;
+            }            
+        }
+
+        Cart.Products.Clear();
+
+        NavManager.NavigateTo(Paths.Bill + Paths.Backlash + bill.Id);
+    }
+
+    private void OnProductCountChange()
+    {
+        ValidationErrors = Cart.Validate(ProductContextManager);
+    }
+
+    private void OnValueChange(ChangeEventArgs<string, Address> args)
+    {
+        var address = args.ItemData;
+
+        SelectedAddress.HouseNumber = address.HouseNumber;
+        SelectedAddress.Ward = address.Ward;
+        SelectedAddress.District = address.District;
+        SelectedAddress.City = address.City;
+        SelectedAddress.PostalCode = address.PostalCode;
+    }
+}

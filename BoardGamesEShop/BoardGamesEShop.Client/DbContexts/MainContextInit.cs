@@ -1,7 +1,9 @@
 ﻿using BoardGamesEShop.Client.DbContexts;
 using BoardGamesEShop.Client.Models.Accounts;
 using BoardGamesEShop.Client.Models.Products;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BoardGamesEShop.Client.DbContexts;
 
@@ -28,5 +30,9 @@ public sealed partial class MainDbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         _ = optionsBuilder.UseNpgsql("host=localhost; database=board_games_e_shop; username=postgres; password=password");
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
     }
 }

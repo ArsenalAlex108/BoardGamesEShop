@@ -1,0 +1,82 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Models.Miscellaneous
+@using BoardGamesEShop.Client.Models.Products
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@using BoardGamesEShop.Client.Services
+@using BoardGamesEShop.Client.Templates
+@using Microsoft.EntityFrameworkCore
+@using Syncfusion.Blazor.DropDowns
+
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@inject Cart Cart
+@inject Singleton<Account> Account
+@attribute [Route(Paths.Bill + Paths.Backlash + "{billId:guid}")]
+
+<h3>Order Information</h3>
+<p>Id: @BillId</p>
+<p>Buyer: @Bill.Buyer.Name</p>
+<p>Destination: @Bill.Destination</p>
+<p>Time: @Bill.Time</p>
+<p>Products:</p>
+<div style="th, td { padding: 15px }">
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>Count</th>
+            <th>Price</th>
+        </tr>
+        @foreach (var (product, count) in Products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td align="right">@count</td>
+                <td>@(product.Price * count)</td>
+            </tr>
+        }
+        <tr>
+            <th colspan="2">Total</th>
+            <td>@Bill.TotalPrice</td>
+        </tr>
+    </table>
+</div>
+@code {
+
+    [Parameter]
+    public Guid BillId { get; set; }
+
+    private Bill Bill { get; set; } = null!;
+
+    private IList<(Product product, int count)> Products = [];
+
+    protected override void OnInitialized()
+    {
+        Bill = ProductContextManager.Select(db => db.Bills
+                                                    .Include(b => b.TotalProductsPrice.Currency)
+                                                    .Include(b => b.Buyer)                                                   
+                                                    .Where(b => b.Id == BillId))
+                                    .FirstOrDefault()!;
+
+        if (Bill is not null && ( Account.Value is Admin || Account.Value is not null && Account.Value.Equals(Bill?.Buyer)))
+        {
+            foreach(var product in ProductContextManager.Select(p => p.Products.Include(p => p.Price.Currency)))
+            {
+                int count = ProductContextManager.Select(p => p.BillProducts.Include(p => p.Product)
+                                                                            .Include(p => p.Product.Price.Currency))
+                                                 .Where(p => p.Product == product)
+                                                 .Sum(p => p.Count);
+                if (count > 0)
+                {
+                    Products.Add((product, count));
+                }
+            }
+
+            return;
+        }
+
+        NavManager.NavigateTo(Paths.Login);
+    }
+}

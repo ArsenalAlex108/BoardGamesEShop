@@ -1,6 +1,24 @@
-﻿@page "/admin/games"
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@inherits AdminPage
+
+@attribute [Route(Paths.ManageGames)]
 
 <h3>ManageGames</h3>
+@foreach (var game in ProductContextManager.Select(db => db.Games))
+{
+    <p>@game.Name</p>
+    @if (game.ImagePaths.Count > 0 && File.Exists(game.ImagePaths[0].Path))
+    {
+        <img src=@game.ImagePaths[0].Path />
+    }
+}
+
+<button onclick=@(() => NavManager.NavigateTo(Paths.AddGames))>Add Game</button>
 
 @code {
 

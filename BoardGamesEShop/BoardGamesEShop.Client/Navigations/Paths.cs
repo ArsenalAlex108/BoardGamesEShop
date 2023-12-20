@@ -10,15 +10,13 @@ public static partial class Paths
 
     public const string MyAccount = "myAccount";
 
-    public const string Admin = "admin";
-
-    public const string ManageAccounts = Admin + "/accounts";
-
-    public const string ManageGames = Admin + "/games";
-
-    public const string ManageProducts = Admin + "/products";
-
-    public const string ManageWarehouses = Admin + "/warehouses";
-
     public const string Backlash = "/";
+
+    public const string LogOut = "logout";
+
+    public const string Product = "product";
+
+    public const string Cart = "cart";
+
+    public const string Bill = "bill";
 }

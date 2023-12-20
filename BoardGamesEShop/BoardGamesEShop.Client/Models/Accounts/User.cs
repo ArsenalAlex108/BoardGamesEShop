@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+
 using BoardGamesEShop.Client.Models.Miscellaneous;
 
 namespace BoardGamesEShop.Client.Models.Accounts;

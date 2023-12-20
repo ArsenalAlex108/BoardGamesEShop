@@ -23,11 +23,11 @@ public sealed class DbContextManager<TContext>(Func<TContext> factory) where TCo
         using var dbcontext = factory();
 
         action ??= i => { };
-        
+
         action(dbcontext);
         return await dbcontext.SaveChangesAsync(cancellationToken: cancellationToken);
     }
-    
+
     public async Task<int> UpdateAsync<TEntity>(TEntity entity) where TEntity : class
     {
         return await Transaction(db => db.Update<TEntity>(entity));
@@ -40,7 +40,7 @@ public sealed class DbContextManager<TContext>(Func<TContext> factory) where TCo
         return await Transaction(db => db.UpdateRange(entities));
     }
 
-    public List<TResult> Select<TResult>(Func<TContext, DbSet<TResult>> query) where TResult : class
+    public List<TResult> Select<TResult>(Func<TContext, IEnumerable<TResult>> query) where TResult : class
     {
         using var dbcontext = factory();
         return [.. query(dbcontext)];

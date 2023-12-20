@@ -2,7 +2,10 @@
 @using BoardGamesEShop.Client.DbContexts.Abstractions
 @using BoardGamesEShop.Client.Models.Accounts
 @using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
 @attribute [Route(Paths.ManageAccounts), Route(Paths.Admin)]
+
+@inherits AdminPage
 
 @inject DbContextManager<IAccountContext> AccountContextManager
 

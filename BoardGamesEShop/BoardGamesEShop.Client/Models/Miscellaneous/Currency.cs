@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 
+using Microsoft.EntityFrameworkCore.Update;
+
 namespace BoardGamesEShop.Client.Models.Miscellaneous;
 
 
@@ -18,4 +20,6 @@ public sealed class Currency
     {
         return string.Format(FormatString, amount, Name);
     }
+
+    public static Currency USD { get; } = new() { Name = "USD", FormatString = "$ {0}" };
 }

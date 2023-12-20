@@ -1,0 +1,90 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Dtos
+@using BoardGamesEShop.Client.Models.Miscellaneous
+@using BoardGamesEShop.Client.Models.Products
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Templates
+@inherits AdminPage
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@attribute [Route(Paths.AddProducts)]
+
+<h3>AddProduct</h3>
+<EditForm Model="product" OnValidSubmit="Submit" FormName="AddProductForm">
+    @if (!String.IsNullOrWhiteSpace(validationErrors))
+    {
+        <div class="alert alert-danger">@validationErrors</div>
+    }
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-field">
+        <label>@(nameof(ProductDto.Name)):</label>
+        <div>
+            <InputText @bind-Value="product.Name" />
+        </div>
+    </div>
+    <div class="form-field">
+        <label>@(nameof(ProductDto.Description)):</label>
+        <div>
+            <InputTextArea @bind-Value="product.Description" />
+        </div>
+    </div>
+    <div class="form-field">
+        <label>@(nameof(ProductDto.Price)):</label>
+        <div>
+            <MoneyInput OutValue="@(i => product.Price = i)"></MoneyInput>
+        </div>
+    </div>
+    <div class="form-field">
+        <label>@(nameof(ProductDto.ImagePaths)):</label>
+        <div>
+            <ListStringForm StringList="product.ImagePaths" ItemName="Image Link" />
+        </div>
+    </div>
+    <div class="form-field">
+        <label>@(nameof(ProductDto.Games)):</label>
+        <div>
+            <ObjectListInput DataSource="ProductContextManager.Select(db => db.Games)"
+                TItem=Game ItemName=@(typeof(Game).Name) ItemList=product.Games 
+                ValueName=@nameof(Game.Name)
+                TextName=@nameof(Game.Name)/>
+        </div>
+    </div>
+    <button type="submit">Add Product</button>
+</EditForm>
+
+
+
+@code {
+    private ProductDto product = new();
+
+    private string validationErrors = "";
+
+    private async Task Submit(EditContext editContext)
+    {
+        validationErrors = "";
+
+        if (product.Price?.Currency is null)
+        {
+            validationErrors += $"{((validationErrors == "")? "" : "\n")}A currency must be selected.";
+        }
+        if (product.Games.Any(g => g is null))
+        {
+            validationErrors += $"{((validationErrors == "") ? "" : "\n")}A game must be selected for each field.";
+        }
+
+        if (validationErrors != "") return;
+
+        await ProductContextManager.Transaction(async db =>
+        {
+            db.Update(product.Price!.Currency);
+
+            db.UpdateRange(product.Games);
+
+            await db.Products.AddAsync(product.ToProduct()).ConfigureAwait(false);
+        }).ConfigureAwait(false);
+
+        NavManager.NavigateTo(Paths.ManageProducts);
+    }
+}

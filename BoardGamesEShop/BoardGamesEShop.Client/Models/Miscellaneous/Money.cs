@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGamesEShop.Client.Models.Miscellaneous;
@@ -22,8 +23,14 @@ public class Money
 
     public static Money operator +(Money a, Money b)
     {
-        if (a.Currency != b.Currency) throw new NotSupportedException("Cannot add money of different currencies.");
+        if (a.Currency.Name != b.Currency.Name) throw new NotSupportedException("Cannot add money of different currencies.");
 
         return new Money() { Amount = a.Amount + b.Amount, Currency = a.Currency };
+    }
+
+    public static Money operator *(Money a, int amount)
+    {
+
+        return new Money() { Amount = a.Amount * amount, Currency = a.Currency };
     }
 }

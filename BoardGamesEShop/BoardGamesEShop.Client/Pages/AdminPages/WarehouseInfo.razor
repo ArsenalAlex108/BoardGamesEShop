@@ -1,0 +1,138 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Models.Products
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Services
+@using BoardGamesEShop.Client.Templates
+@using Microsoft.EntityFrameworkCore
+@using Syncfusion.Blazor.DropDowns
+<h3>WarehouseInfo</h3>
+
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@inject Singleton<Account> Account
+
+@inherits AdminPage
+
+@attribute [Route(Paths.ManageWarehouses + Paths.Backlash + "{warehouseId:guid}")]
+
+@if (Warehouse is null)
+{
+    <p>This warehouse doesn't exist.</p>
+}
+else
+{
+    <EditForm Model="Warehouse" OnValidSubmit="SaveChanges">
+        <div>Guid: @WarehouseId</div>
+        <AddressInput Address="Warehouse.Address" />
+        <table>
+            <tr>
+                <th>Product</th>
+                <th>Stock</th>
+            </tr>
+            @foreach (var (product, count) in ProductStocks)
+            {
+                var iter = product;
+
+                <td>@product.Name</td>
+                <td><InputNumber @bind-Value=count.Value></InputNumber></td>
+            }
+        </table>
+        <p>Add Product:</p>
+        <SfDropDownList TValue="string" TItem=Product Placeholder=@("Select a product") DataSource="@Products" AllowFiltering=true>
+            <DropDownListFieldSettings Value=Name Text=Name></DropDownListFieldSettings>
+            <DropDownListEvents TValue="string" 
+                TItem="Product" 
+                ValueChange="OnProductAdd">
+            </DropDownListEvents>
+        </SfDropDownList>
+        <button type="submit">Save Changes</button>
+    </EditForm>
+}
+
+@code {
+
+    [Parameter]
+    public Guid WarehouseId { get; set; }
+
+    private Warehouse? Warehouse { get; set; }
+
+    private IDictionary<Product, Singleton<int>> ProductStocks { get; set; } = null!;
+
+    private IList<Product> Products { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        List<Stock> list = [];
+
+        using (var db = ProductContextManager.CreateContext())
+        {
+
+            Warehouse = db.Warehouses.ToList().Find(w => w.Id == WarehouseId);
+
+            list = db.Stocks.Include(s => s.Warehouse).Include(s => s.Product).ToList();
+
+            db.SaveChanges();
+        }
+
+        using (var db = ProductContextManager.CreateContext())
+        {
+            ProductStocks = list.Where(s => s.Warehouse.Id == WarehouseId)
+                                .ToDictionary(p => p.Product, p => new Singleton<int>(p.Count));
+
+            Products = db.Products.ToList().Where(p => !ProductStocks.ContainsKey(p)).ToList();
+        }
+    }
+
+    private async Task SaveChanges(EditContext editContext)
+    {
+        await ProductContextManager.UpdateAsync<Warehouse>(Warehouse!);
+
+        await ProductContextManager.Transaction(async db =>
+        {
+            db.Update(Warehouse!);
+
+            foreach (var (product, count) in ProductStocks)
+            {
+                if (count.Value <= 0) continue;
+
+                db.Update(product);
+
+                var stock = await db.Stocks.Include(s => s.Warehouse)
+                                     .Include(s => s.Product)
+                                     .Where(s => s.Product == product && s.Warehouse == Warehouse)
+                                     .FirstOrDefaultAsync().ConfigureAwait(false);
+
+                if (stock is not null)
+                {
+                    stock.Count = count.Value;
+                }
+                else
+                {
+                    stock = new() 
+                    { 
+                        Warehouse = Warehouse!,
+                        Product = product,
+                        Count = count.Value 
+                    };
+
+                    await db.Stocks.AddAsync(stock).ConfigureAwait(false);
+                }
+            }
+        }).ConfigureAwait(false);
+
+        NavManager.NavigateTo(Paths.ManageWarehouses);   
+    }
+
+    private void OnProductAdd(ChangeEventArgs<string, Product> args)
+    {
+        var product = args.ItemData;
+
+        if (!ProductStocks.ContainsKey(product))
+        {
+            ProductStocks.Add(product, new(0));
+            Products.Remove(product);
+        }
+    }
+}

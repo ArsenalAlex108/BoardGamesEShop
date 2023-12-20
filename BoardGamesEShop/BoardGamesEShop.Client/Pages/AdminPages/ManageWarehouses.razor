@@ -1,6 +1,21 @@
-﻿@page "/admin/warehouses"
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@inherits AdminPage
+
+@attribute [Route(Paths.ManageWarehouses)]
 
 <h3>ManageWarehouses</h3>
+
+
+@foreach (var warehouse in ProductContextManager.Select(db => db.Warehouses))
+{
+    <div><a href="@(Paths.ManageWarehouses + Paths.Backlash + warehouse.Id)">@warehouse.Address</a></div>
+}
+<button onclick=@(() => NavManager.NavigateTo(Paths.AddWarehouses))>Add Warehouse</button>
 
 @code {
 

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BoardGamesEShop.Client.Dtos;
 
-public sealed class AccountLogin
+public sealed class AccountDto
 {
     [Required, Length(2, 20)]
     public string Name { get; set; } = "";
@@ -13,5 +13,5 @@ public sealed class AccountLogin
     [Required, Length(2, 20)]
     public string Password { get; set; } = "";
 
-    public User ToAccount() => new () { Name = Name, Password = Password };
+    public User ToAccount() => new() { Name = Name, Password = Password };
 }

@@ -1,0 +1,35 @@
+﻿@using BoardGamesEShop.Client.Services
+<EditForm Model="@StringList">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <p>
+        <button type="button" @onclick="AddString">Add @ItemName</button>
+    </p>
+
+    @{byte i = 0;}
+    @foreach (var store in StringList)
+    {
+        var index = i;
+        <p>
+            <InputText @bind-Value=store.Value />
+            <button type="button" @onclick=@(() => { 
+                StringList.RemoveAt(index);
+            })>Remove</button>
+        </p>
+        i++;
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public required IList<Singleton<string>> StringList { get; set; }
+
+    [Parameter]
+    public string ItemName { get; set; } = "String";
+
+    void AddString()
+    {
+        StringList.Add(new(""));
+    }
+}
+

@@ -5,13 +5,17 @@ using BoardGamesEShop.Client.Services;
 using BoardGamesEShop.Components;
 using Microsoft.EntityFrameworkCore;
 using BoardGamesEShop.Client.Models.Accounts;
+using Syncfusion.Blazor;
+using BoardGamesEShop.Client.Models.Miscellaneous;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+                .AddInteractiveServerComponents()
+                .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddSyncfusionBlazor();
 
 Func<MainDbContext> factory = () => new();
 
@@ -50,11 +54,11 @@ using (var db = new MainDbContext())
 {
     _ = db.Database.EnsureCreated();
 
-    if (!db.Admins.Any())
-    {
-        db.Admins.Add(new() { Name = "admin", Password = "4d8f5e2c" });
-        _ = db.SaveChanges();
-    }
+    _ = db.Admins.TryAdd(new() { Name = "admin", Password = "4d8f5e2c" });
+
+    _ = db.Currencies.TryAdd(Currency.USD);
+
+    _ = db.SaveChanges();
 }
 
 app.Run();

@@ -1,0 +1,32 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Models.Miscellaneous
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Templates
+@inherits AdminPage
+@inject DbContextManager<IProductContext> ProductContextManager
+@inject NavigationManager NavManager
+@attribute [Route(Paths.AddWarehouses)]
+
+<h3>Warehouse Address</h3>
+
+<EditForm Model="address" FormName="AddressForm" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <AddressInput Address="address"/>
+    <button type="submit">Add Warehouse</button>
+</EditForm>
+
+@code {
+    private Address address = new();
+
+    private async Task Submit(EditContext editContext)
+    {
+        await ProductContextManager.Transaction(async db =>
+        {
+            await db.Warehouses.AddAsync(new() { Address = address });   
+        });
+
+        NavManager.NavigateTo(Paths.ManageWarehouses);
+    }
+}

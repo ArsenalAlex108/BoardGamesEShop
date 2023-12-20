@@ -1,0 +1,18 @@
+﻿@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
+@inherits MainLayout
+@inject NavigationManager NavManager
+@code {
+    public override Account? Account 
+    { 
+        set 
+        {
+            base.Account = value;
+
+            if (value is null || value.GetType() != typeof(Admin))
+            {
+                NavManager.NavigateTo(Paths.Home);    
+            }
+        }
+    }
+}

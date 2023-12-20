@@ -1,10 +1,31 @@
 ﻿@using BoardGamesEShop.Client.Models.Accounts
 @inherits LayoutComponentBase
+@implements ILayoutHandle
 
 @code {
-    public virtual void LoadAccount(Account? account)
+
+    public virtual Account? Account
     {
-        
+        set
+        {
+
+        }
+    }
+
+    public virtual bool IsAdmin 
+    {
+        set
+        {
+
+        }
+    }
+
+    public virtual bool IsUser
+    {
+        set
+        {
+            
+        }
     }
 }
 

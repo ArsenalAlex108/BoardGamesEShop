@@ -1,0 +1,60 @@
+﻿@using BoardGamesEShop.Client.Services
+@using Syncfusion.Blazor.DropDowns
+
+@typeparam TItem where TItem : class
+
+<EditForm Model="@ItemList" FormName="ObjectListInput">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <p>
+        <button type="button" @onclick="AddString">Add @ItemName</button>
+    </p>
+
+    @{byte i = 0;}
+    @foreach (var store in ItemList)
+    {
+        var index = i;
+        <p>
+            <SfDropDownList TValue="string" TItem=TItem Placeholder=@("Select" + ItemName) DataSource="@DataSource" AllowFiltering=true>
+                <DropDownListFieldSettings Value=@ValueName Text=@TextName></DropDownListFieldSettings>
+                <DropDownListEvents TValue="string" 
+                    TItem="TItem" 
+                    ValueChange="args => OnValueChange(index, args)">
+                </DropDownListEvents>
+            </SfDropDownList>
+            <button type="button" @onclick=@(() => { 
+                ItemList.RemoveAt(index);
+            })>Remove</button>
+        </p>
+        i++;
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public required IList<TItem?> ItemList { get; set; }
+
+    [Parameter]
+    public required IReadOnlyCollection<TItem> DataSource { get; set; } 
+
+    [Parameter]
+    public string ItemName { get; set; } = "Item";
+
+    [Parameter]
+    public string TextName { get; set; } = "Name";
+
+    [Parameter]
+    public string ValueName { get; set; } = "Name";
+
+    private void AddString()
+    {
+        ItemList.Add(null);
+    }
+
+    private void OnValueChange(byte index, ChangeEventArgs<string, TItem> args)
+    {
+        ItemList[index] = args.ItemData;
+    }
+}
+
+

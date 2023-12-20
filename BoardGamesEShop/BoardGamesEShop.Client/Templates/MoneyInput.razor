@@ -1,0 +1,44 @@
+﻿@using BoardGamesEShop.Client.DbContexts
+@using BoardGamesEShop.Client.DbContexts.Abstractions
+@using BoardGamesEShop.Client.Dtos
+@using BoardGamesEShop.Client.Models.Miscellaneous
+@using Syncfusion.Blazor.DropDowns
+
+@inject DbContextManager<IMiscellaneousContext> MiscellaneousContextManager
+
+<InputNumber @bind-Value=amount @bind-Value:after="OnAmountChange"></InputNumber>
+<SfDropDownList TValue="string" TItem=Currency Placeholder="Select a currency" DataSource="@currencies" AllowFiltering=true>
+    <DropDownListFieldSettings Value="Name" Text="Name"></DropDownListFieldSettings>
+    <DropDownListEvents TValue="string" TItem="Currency" ValueChange="OnValueChange"></DropDownListEvents>
+</SfDropDownList>
+
+@code {
+
+    private decimal amount;
+    private Currency currency = null!;
+
+    private List<Currency> currencies = [];
+
+    [Parameter]
+    public required EventCallback<Money> OutValue { get; set; }
+
+    private async Task OnAmountChange()
+    {
+        if (currency is not null)
+        {
+            await OutValue.InvokeAsync(new () { Amount = amount, Currency = currency });
+        }
+    }
+
+    private async Task OnValueChange(ChangeEventArgs<string, Currency> args)
+    {
+        currency = args.ItemData;
+
+        await OutValue.InvokeAsync(new() { Amount = amount, Currency = currency });
+    }
+
+    protected override void OnInitialized()
+    {
+        currencies = MiscellaneousContextManager.Select(db => db.Currencies);
+    }
+}

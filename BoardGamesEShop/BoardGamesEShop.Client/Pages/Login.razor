@@ -10,7 +10,7 @@
 @inject DbContextManager<IAccountContext> AccountContextManager
 @inject NavigationManager NavManager
 @inject Singleton<Account> Account
-
+@inject Cart Cart
 @rendermode InteractiveServer
 
 @attribute [Route(Paths.Backlash + Paths.Login)]
@@ -25,7 +25,7 @@
     [CascadingParameter]
     public required PublicLayout Layout { get; set; }
 
-    private void OnSubmit(AccountLogin login)
+    private void OnSubmit(AccountDto login)
     {
         var account = AccountContextManager.Select(db => db.Accounts)
                                            .Find(acc => acc.Name == login.Name);
@@ -46,7 +46,7 @@
 
         NavManager.NavigateLogin(account);
 
-        Layout.LoadAccount(account);
+        Layout.Account = account;
     }
 
 }

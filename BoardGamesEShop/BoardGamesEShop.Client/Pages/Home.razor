@@ -4,6 +4,7 @@
 @using BoardGamesEShop.Client.DbContexts.Abstractions
 @using BoardGamesEShop.Client.Templates
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.EntityFrameworkCore
 
 @inject Cart cart
 @inject DbContextManager<IAccountContext> AccountContextFactory
@@ -14,16 +15,11 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Search and order board games</h1>
 
-Welcome to your new app.
-
-<a>Login</a>
-<a>Sign Up</a>
-<a>Show Cart</a>
 <input type="text" name="searchBar"/>
 
-<ProductList Products="ProductContextFactory.Select(db => db.Products).Where(p => !p.IsDiscontinued).ToList()" />
+<ProductList Products="ProductContextFactory.Select(db => db.Products.Include(p => p.Price.Currency)).Where(p => !p.IsDiscontinued).ToList()" />
 
 @code {
 

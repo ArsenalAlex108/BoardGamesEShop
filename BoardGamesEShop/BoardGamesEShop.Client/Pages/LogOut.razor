@@ -1,0 +1,19 @@
+﻿@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Pages.Layout
+@using BoardGamesEShop.Client.Services
+
+@attribute [Route(Paths.LogOut)]
+
+@inject NavigationManager NavManager
+
+@code {
+    [CascadingParameter]
+    public required ILayoutHandle Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Layout.Account = null;
+        NavManager.NavigateTo(Paths.Home);    
+    }
+}

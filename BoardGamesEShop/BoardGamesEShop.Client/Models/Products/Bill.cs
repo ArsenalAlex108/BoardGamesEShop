@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using BoardGamesEShop.Client.Models.Accounts;
 using BoardGamesEShop.Client.Models.Miscellaneous;
 
@@ -16,7 +17,7 @@ public class Bill
     public virtual required User Buyer { get; set; }
     public virtual required Address Destination { get; set; }
     public required Money TotalProductsPrice { get; set; }
-    public required Money DeliveryPrice { get; set; }
+    public Money DeliveryPrice { get; set; } = new() { Currency = Currency.USD };
 
-    public Money GetTotalPrice => TotalProductsPrice + DeliveryPrice;
+    public Money TotalPrice => TotalProductsPrice + DeliveryPrice;
 }

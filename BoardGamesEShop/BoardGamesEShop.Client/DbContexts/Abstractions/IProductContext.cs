@@ -1,4 +1,5 @@
 ﻿using BoardGamesEShop.Client.Models.Products;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGamesEShop.Client.DbContexts.Abstractions;

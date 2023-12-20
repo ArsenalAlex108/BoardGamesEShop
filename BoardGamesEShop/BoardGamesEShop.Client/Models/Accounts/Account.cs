@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Identity;
 
 namespace BoardGamesEShop.Client.Models.Accounts;
@@ -30,5 +31,15 @@ public abstract class Account
     public bool CheckPassword(string password)
     {
         return new PasswordHasher<Account>().VerifyHashedPassword(this, PasswordHash, password) != PasswordVerificationResult.Failed;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is not null && obj.GetType() == GetType() && Name == ((Account)obj).Name;
+    }
+
+    public override int GetHashCode()
+    {
+        return Name.GetHashCode();
     }
 }

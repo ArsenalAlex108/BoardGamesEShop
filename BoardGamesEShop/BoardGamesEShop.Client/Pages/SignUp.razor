@@ -24,7 +24,7 @@
     [CascadingParameter]
     public required PublicLayout Layout { get; set; }
 
-    private async Task OnSubmit(AccountLogin signup)
+    private async Task OnSubmit(AccountDto signup)
     {
         if (AccountContextManager.Select(db => db.Accounts)
                                  .Any(acc => acc.Name == signup.Name))
@@ -44,7 +44,7 @@
 
         NavManager.NavigateLogin(account);
 
-        Layout.LoadAccount(account);
+        Layout.Account = account;
     }
 
 }

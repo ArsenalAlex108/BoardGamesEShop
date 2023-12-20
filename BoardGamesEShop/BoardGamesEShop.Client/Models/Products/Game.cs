@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using BoardGamesEShop.Client.Models.Miscellaneous;
 
 namespace BoardGamesEShop.Client.Models.Products;

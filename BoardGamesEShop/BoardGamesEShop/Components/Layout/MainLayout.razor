@@ -1,13 +1,17 @@
 ﻿@using BoardGamesEShop.Client.Models.Accounts
+@using BoardGamesEShop.Client.Navigations
 @using BoardGamesEShop.Client.Pages.Layout
 @using BoardGamesEShop.Client.Services
 @inherits PublicLayout
 
+@inject Singleton<Account> AccountStore
+@inject NavigationManager NavManager
+@inject Cart Cart
 
 <CascadingValue Value="this">
     <div class="page">
         <div class="sidebar">
-            <NavMenu AccountStore="accountStore" />
+            <NavMenu AccountStore="AccountStore" />
         </div>
 
         <main>
@@ -29,11 +33,36 @@
 </div>
 
 @code {
-    private Singleton<Account?> accountStore = new(null);
 
-    public override void LoadAccount(Account? account)
+    public override Account? Account
     {
-        accountStore.Value = account;
+        set
+        {
+            AccountStore.Value = value;
+            Cart.Products.Clear();
+        }
+    }
+
+    public override bool IsAdmin
+    {
+        set
+        {
+            if (value && ( AccountStore.Value is null || AccountStore.Value.GetType() != typeof(Admin)))
+            {
+                NavManager.NavigateTo(Paths.Home);    
+            }
+        }
+    }
+
+    public override bool IsUser
+    {
+        set
+        {
+            if (value && (AccountStore.Value is null || AccountStore.Value.GetType() != typeof(User)))
+            {
+                NavManager.NavigateTo(Paths.Home);
+            }
+        }
     }
 } 
 

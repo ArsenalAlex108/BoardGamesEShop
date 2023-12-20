@@ -1,13 +1,13 @@
 ﻿@using BoardGamesEShop.Client.Models.Products;                                                    
+@using BoardGamesEShop.Client.Navigations
 
 @foreach (var product in Products)
 {
     <p>Showing @(Products.Count) out of @(Products.Count) items.</p><br/>
 
-    <a>@product.Name</a><br/>
+    <a href="@(Paths.Product + Paths.Backlash + product.Id)">@product.Name</a><br/>
     <label>@product.Description</label><br/>
     <label>@product.Price</label><br/>
-    <a>Buy</a><br/>
 }
 
 @code {

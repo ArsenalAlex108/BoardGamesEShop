@@ -1,0 +1,12 @@
+﻿@using BoardGamesEShop.Client.Pages.Layout
+<h3>AdminPage</h3>
+
+@code {
+    [CascadingParameter]
+    public required ILayoutHandle Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Layout.IsAdmin = true;
+    }
+}

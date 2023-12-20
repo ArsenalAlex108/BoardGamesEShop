@@ -1,12 +1,19 @@
-﻿@page "/product"
-
-@using BoardGamesEShop.Client.DbContexts;
+﻿@using BoardGamesEShop.Client.DbContexts;
+@using BoardGamesEShop.Client.Dtos
+@using BoardGamesEShop.Client.Models.Accounts
 @using BoardGamesEShop.Client.Models.Products;
 @using BoardGamesEShop.Client.DbContexts.Abstractions;
 @using BoardGamesEShop.Client.Navigations
+@using BoardGamesEShop.Client.Services
 @using Microsoft.AspNetCore.WebUtilities
-@inject DbContextManager<IProductContext> ProductContextFactory
+@using Microsoft.EntityFrameworkCore
+@using Syncfusion.Blazor.DropDowns
+@using System.ComponentModel.DataAnnotations
+@inject DbContextManager<IProductContext> ProductContextManager
 @inject NavigationManager NavManager
+@inject Singleton<Account> Account
+@inject Cart Cart
+@attribute [Route(Paths.Product + Paths.Backlash + "{productId:guid}")]
 
 @if (Product is null)
 {
@@ -19,55 +26,146 @@ if (Product.IsDiscontinued)
 }
 else
 {
-    <label>@Product.Name</label>
+    <h3>@Product.Name</h3>
     <br />
-    <label>@Product.Price</label>
+    <h4>Price: @Product.Price</h4>
     <br />
+    <h4>Description: </h4>
     <label>@Product.Description</label>
     <br />
-    <a>Purchase</a>
-    <label>Reviews</label>
-    <br />
-    
-    using var productContext = ProductContextFactory.CreateContext();
-    
-    foreach (var review in productContext.Reviews.Where(r => r.Product == Product))
+    int productCount = ProductContextManager.Select(db => db.Stocks.Include(s => s.Product))
+                                            .Where(s => s.Product == Product)
+                                            .Sum(s => s.Count);
+
+    <h4>Items in stock: @productCount</h4>
+
+    if (productCount > 0)
     {
-        <label>@review.Reviewer.Name
-        </label><br/>
-        <label>Stars: @review.Stars</label>
-        @if (!String.IsNullOrWhiteSpace(review.Comment))
+        <EditForm Model="Amount" OnValidSubmit="SubmitProduct" FormName="AddProductToCartForm">
+            <InputNumber @bind-Value=Amount></InputNumber>
+        <button type="submit">Add to Cart</button>
+            </EditForm>
+    }
+    else
+    {
+
+    }
+
+    <br />
+
+    using var productContext = ProductContextManager.CreateContext();
+
+    if (Account.Value is User user)
+    {
+            <h4>Your Review:</h4>
+
+        bool anyBills = productContext.BillProducts.Include(i => i.Product)
+                                   .Include(i => i.Bill)
+                                   .Where(i => i.Product == Product && i.Bill.Buyer == user).Any();
+
+        if (anyBills)
         {
-            <p>review.Comment</p>
+            var result = productContext.Reviews.Include(r => r.Reviewer)
+                                      .Include(r => r.Product)
+                                      .Where(r => r.Reviewer.Equals(Account.Value)
+                                      && r.Product.Equals(Product)).FirstOrDefault();
+
+            if (result is not null)
+            {
+                dto.Stars = result.Stars;
+                dto.Product = result.Product;
+                dto.Reviewer = result.Reviewer;
+                dto.Comment = result.Comment;
+            }
+
+            <EditForm Model="@dto" FormName="AddReviewForm" OnValidSubmit="SubmitReview">
+                <InputNumber @bind-Value=@dto.Stars></InputNumber> ⭐<br /><br/>
+                <p>Comment: </p>
+                <InputTextArea @bind-Value=@dto.Comment></InputTextArea><br />
+                <button type="submit">@("Review")</button>
+            </EditForm>
+            
+        }
+        else
+        {
+            <p>Purchase the product first to give a review.</p>
         }
     }
 
-    <label>Review</label>
+    <br/>
+    <h4>Reviews</h4><br/>
+
+    <ul>
+    @foreach (var review in productContext.Reviews.Include(r => r.Product)
+                                                  .Include(r => r.Reviewer)
+                                                  .Where(r => r.Product == Product))
+    {
+        <li>
+        <h4>@review.Reviewer.Name
+        </h4>
+        <label>@string.Concat(Enumerable.Repeat("⭐", review.Stars))</label>
+        @if (!String.IsNullOrWhiteSpace(review.Comment))
+        {
+            <p>@review.Comment</p><br/><br/>
+        }
+        </li>
+    }
+    </ul>
 }
 
 @code {
     [Parameter]
-    public required Product? Product { get; set; }
+    public required Guid ProductId { get; set; }
+
+    private ReviewDto dto = new();
+
+    [Range(0, int.MaxValue, MinimumIsExclusive = true)]
+    private int Amount { get; set; } = 1;
+
+    [Parameter]
+    public required Product Product { get; set; }
 
     protected override void OnInitialized()
     {
-        bool queryResult = NavManager.TryGetValue("productId", out var idString);
+        Product = ProductContextManager.Select(db => db.Products.Include(p => p.Price.Currency))
+                                       .Find(p => p.Id == ProductId)!;
+    }
 
-        if (!queryResult)
+    private void SubmitProduct(EditContext editContext)
+    {
+        if (Amount < 1)
         {
-            NavManager.NavigateTo("");
+            Amount = 1;
             return;
         }
 
-        bool idResult = Guid.TryParse(idString, out Guid id);
-
-        if (!idResult)
+        if (Account.Value is null)
         {
-            NavManager.NavigateTo("");
+            NavManager.NavigateTo(Paths.Login);
             return;
         }
 
-        Product = ProductContextFactory.Select(db => db.Products)
-                                       .Find(p => p.Id == id);
+        if (!Cart.Products.ContainsKey(Product))
+        {
+            Cart.Products.Add(Product, new(0));    
+        }
+
+        Cart.Products[Product].Value += Amount;
+
+        NavManager.NavigateTo(Paths.Cart);
+    }
+
+    private async Task SubmitReview(EditContext editContext)
+    {
+        await ProductContextManager.Transaction(async db =>
+        {
+            _ = db.Update(Product!);
+            _ = db.Update(Account.Value);
+
+            dto.Product = Product!;
+            dto.Reviewer = (User)Account.Value;
+
+            db.Reviews.AddOrUpdate(dto.ToReview());
+        });
     }
 }
