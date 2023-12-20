@@ -16,5 +16,7 @@ steps:
           - "gcr.io/$PROJECT_ID/boardgameeshop:$COMMIT_SHA"
           - "--region"
           - "asia-east1"
+options:
+  logging: CLOUD_LOGGING_ONLY          
 images:
     - "gcr.io/$PROJECT_ID/boardgameeshop:$COMMIT_SHA"
