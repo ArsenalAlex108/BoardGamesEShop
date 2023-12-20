@@ -29,7 +29,10 @@ public sealed partial class MainDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        _ = optionsBuilder.UseNpgsql("host=localhost; database=board_games_e_shop; username=postgres; password=password");
+        string string1 = "host=localhost; database=board_games_e_shop; username=postgres; password=password";
+        string string2 = "host=34.80.57.16; username=postgres; password=N_rrPR9y~cdiAR))";
+
+        _ = optionsBuilder.UseNpgsql(string2);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
